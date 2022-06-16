@@ -3,24 +3,28 @@ package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.kata.spring.boot_security.demo.dao.RoleRepository;
+import ru.kata.spring.boot_security.demo.dao.UserRepository;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repository.RoleRepository;
-import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Service
 public class UserServiceImpl implements UserService {
+    private final RoleRepository roleRepository;
 
-    private RoleRepository roleRepository;
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
                            RoleRepository roleRepository) {
+
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
@@ -34,7 +38,8 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll();
     }
 
-    public void saveUser(User user) {
+    public void saveUser(User user, Set<Role> roles) {
+        user.setRoles(roles);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
@@ -43,7 +48,7 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
-    public List<Role> listRoles() {
-        return roleRepository.findAll();
+    public Set<Role> getAllRoles() {
+        return new HashSet<>(roleRepository.findAll());
     }
 }
